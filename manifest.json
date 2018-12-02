@@ -1,0 +1,20 @@
+{
+  "manifest_version": "2",
+  "api_version": "1",
+  "name": "Password store",
+  "description": "Extension for the standard unix password manager",
+  "developer_name": "Yannis Huber",
+  "icon": "images/icon.png",
+  "options": {
+    "query_debounce": 0.1
+  },
+  "preferences": [
+    {
+      "id": "pass_kw",
+      "type": "keyword",
+      "name": "pass keyword",
+      "description": "Keyword used to launch pass extension",
+      "default_value": "pass"
+    }
+  ]
+}
