@@ -1,6 +1,8 @@
 # Ulauncher password-store extension
 
-A simple [pass](https://www.passwordstore.org/) extension for [Ulauncher](https://ulauncher.io/).
+> A simple [pass](https://www.passwordstore.org/) extension for [Ulauncher](https://ulauncher.io/).
+
+![Demo](demo.gif)
 
 ## Development
 
