@@ -5,7 +5,8 @@ from ulauncher.api.shared.item.ExtensionResultItem import ExtensionResultItem
 from ulauncher.api.shared.action.RenderResultListAction import RenderResultListAction
 from ulauncher.api.shared.action.HideWindowAction import HideWindowAction
 from ulauncher.api.shared.action.DoNothingAction import DoNothingAction
-from subprocess import check_output
+from ulauncher.api.shared.action.RunScriptAction import RunScriptAction
+from subprocess import check_output, Popen
 from os import path
 import re
 
@@ -31,6 +32,9 @@ class PassExtension(Extension):
 
         return matches
 
+    def copy_to_clipboard(self, item):
+        return RunScriptAction("pass -c %s" % item, None)
+
 
 class KeywordQueryEventListener(EventListener):
 
@@ -48,8 +52,8 @@ class KeywordQueryEventListener(EventListener):
         for i in extension.search(query_arg):
             items.append(ExtensionResultItem(icon='images/icon.png',
                                              name='%s' % i,
-                                             description='description %s' % i,
-                                             on_enter=HideWindowAction()))
+                                             description='Enter to copy to the clipboard',
+                                             on_enter=extension.copy_to_clipboard(i)))
 
         return RenderResultListAction(items)
 

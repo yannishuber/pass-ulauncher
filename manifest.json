@@ -12,8 +12,8 @@
     {
       "id": "pass_kw",
       "type": "keyword",
-      "name": "pass keyword",
-      "description": "Keyword used to launch pass extension",
+      "name": "pass",
+      "description": "pass + space + pattern",
       "default_value": "pass"
     },
     {
