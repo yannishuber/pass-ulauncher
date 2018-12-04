@@ -12,8 +12,10 @@
  In order to see the new extension you have to restart Ulauncher.
  
 ## TODO
-* Adding to possibility to add a new password
-* Git controls (push/pull password-store repo)
+- [ ] List directories first
+- [ ] Check user preferences
+- [ ] Adding to possibility to add a new password
+- [ ] Git controls (push/pull password-store repo)
 
 ## Credits
 Icons made by [Freepik](https://www.freepik.com/) and [Smashicons](https://www.flaticon.com/authors/smashicons) from [Flaticon](https://www.flaticon.com/).

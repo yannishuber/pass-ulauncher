@@ -10,7 +10,7 @@
   },
   "preferences": [
     {
-      "id": "pass_kw",
+      "id": "pass-keyword",
       "type": "keyword",
       "name": "pass",
       "description": "pass + space + pattern",
@@ -21,6 +21,12 @@
       "type": "input",
       "name": "password-store location",
       "default_value": "~/.password-store/"
-}
+    },
+    {
+      "id": "max-results",
+      "type": "input",
+      "name": "maximal number of showed results",
+      "default_value": "6"
+    }
   ]
 }

@@ -5,6 +5,7 @@ from ulauncher.api.shared.item.ExtensionResultItem import ExtensionResultItem
 from ulauncher.api.shared.action.RenderResultListAction import RenderResultListAction
 from ulauncher.api.shared.action.RunScriptAction import RunScriptAction
 from ulauncher.api.shared.action.SetUserQueryAction import SetUserQueryAction
+from ulauncher.api.shared.action.DoNothingAction import DoNothingAction
 from subprocess import check_output
 from os import path
 import re
@@ -25,10 +26,7 @@ class PassExtension(Extension):
 
         store_location = path.expanduser(self.preferences['store-location'])
 
-        if store_location.endswith('/'):
-            store_location = store_location[:-1]
-
-        searching_path = "{0}/{1}".format(store_location, path_ext)
+        searching_path = path.join(store_location, path_ext)
 
         cmd = ['find', searching_path]
 
@@ -55,15 +53,29 @@ class KeywordQueryEventListener(EventListener):
         if not query_arg:
             result = extension.search(depth=1)
         else:
-            if '/' in query_arg:
-                params = re.match("(.*)/(\w+)?", query_arg)
-                path_ext = params.group(1)
-                pattern = "" if not params.group(2) else params.group(2)
-                result = extension.search(path_ext=path_ext, pattern=pattern, depth=1)
-            else:
-                result = extension.search(pattern=query_arg)
+            path_ext = path.split(query_arg)[0]
+            pattern = path.split(query_arg)[1]
 
-        for i in result[:6]:
+            if path_ext.startswith('/'):
+                path_ext = path_ext[1:]
+
+            if not query_arg.endswith('/'):
+                result = extension.search(path_ext=path_ext, pattern=pattern)
+            else:
+                store_location = path.expanduser(extension.preferences['store-location'])
+
+                if not path.exists(path.join(store_location, path_ext)):
+                    return RenderResultListAction([ExtensionResultItem(icon=PASSWORD_ICON,
+                                                                       name='Invalid path !',
+                                                                       description='Please check your arguments.',
+                                                                       on_enter=DoNothingAction()
+                                                                       )])
+                else:
+                    result = extension.search(path_ext=path_ext, pattern=pattern, depth=1)
+
+        nb_results = int(extension.preferences["max-results"])
+
+        for i in result[:nb_results]:
 
             if ".gpg" in i:
                 # remove file extension
@@ -75,7 +87,8 @@ class KeywordQueryEventListener(EventListener):
             else:
                 icon = FOLDER_ICON
                 description = FOLDER_DESCRIPTION
-                action = SetUserQueryAction("{0} {1}/{2}/".format(extension.preferences['pass_kw'], path_ext, i))
+                action = SetUserQueryAction("{0} {1}/".format(extension.preferences['pass-keyword'],
+                                                              path.join(path_ext, i)))
 
             items.append(ExtensionResultItem(icon=icon,
                                              name="{0}".format(i),
