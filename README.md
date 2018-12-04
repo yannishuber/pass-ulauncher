@@ -2,5 +2,5 @@
 
 A simple password-store extension for Ulauncher.
 
-## Acknowledgements
-Icon made by [Freepik](https://www.freepik.com/) from [Flaticon](https://www.flaticon.com/).
+## Credits
+Icons made by [Freepik](https://www.freepik.com/) and [Smashicons](https://www.flaticon.com/authors/smashicons) from [Flaticon](https://www.flaticon.com/).
