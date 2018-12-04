@@ -1,3 +1,4 @@
+from distutils import dep_util
 from ulauncher.api.client.Extension import Extension
 from ulauncher.api.client.EventListener import EventListener
 from ulauncher.api.shared.event import KeywordQueryEvent
@@ -54,7 +55,7 @@ class KeywordQueryEventListener(EventListener):
                 params = re.match("(.*)/(\w+)?", query_arg)
                 path_ext = params.group(1)
                 pattern = "" if not params.group(2) else params.group(2)
-                result = extension.search(path_ext=path_ext, pattern=pattern)
+                result = extension.search(path_ext=path_ext, pattern=pattern, depth=1)
             else:
                 result = extension.search(pattern=query_arg)
 
@@ -73,11 +74,11 @@ class KeywordQueryEventListener(EventListener):
                                                      "pass -c {0}/{1}".format(path_ext, i), None)))
             else:
                 # is a directory
-                items.append(ExtensionResultItem(icon='images/icon.png',
+                items.append(ExtensionResultItem(icon='images/folder.png',
                                                  name="{0}".format(i),
                                                  description='Enter to navigate',
                                                  on_enter=SetUserQueryAction(
-                                                     "{0} {1}/".format(extension.preferences['pass_kw'], i))))
+                                                     "{0} {1}/{2}/".format(extension.preferences['pass_kw'], path_ext, i))))
 
         return RenderResultListAction(items)
 
