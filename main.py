@@ -24,6 +24,8 @@ class PassExtension(Extension):
         if "~" in store_location:
             store_location = path.expanduser(store_location)
 
+        # TODO : add possibility to search for a directory in the password-store structure
+
         cmd = ["find",
                store_location,
                "-iname",
