@@ -19,10 +19,7 @@ class PassExtension(Extension):
 
     def search(self, pattern):
 
-        store_location = self.preferences['store-location']
-
-        if "~" in store_location:
-            store_location = path.expanduser(store_location)
+        store_location = path.expanduser(self.preferences['store-location'])
 
         # TODO : add possibility to search for a directory in the password-store structure
 
