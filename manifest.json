@@ -12,20 +12,20 @@
     {
       "id": "pass-keyword",
       "type": "keyword",
-      "name": "pass",
+      "name": "Pass",
       "description": "pass + space + pattern",
       "default_value": "pass"
     },
     {
       "id": "store-location",
       "type": "input",
-      "name": "password-store location",
+      "name": "Password-store location",
       "default_value": "~/.password-store/"
     },
     {
       "id": "max-results",
       "type": "input",
-      "name": "maximal number of showed results",
+      "name": "Maximal number of showed results",
       "default_value": "6"
     }
   ]
