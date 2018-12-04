@@ -14,7 +14,7 @@
 ## TODO
 - [ ] List directories first
 - [ ] Check user preferences
-- [ ] Adding to possibility to add a new password
+- [ ] Possibility to add a new password
 - [ ] Git controls (push/pull password-store repo)
 
 ## Credits
