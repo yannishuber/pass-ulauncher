@@ -4,27 +4,55 @@ from ulauncher.api.shared.event import KeywordQueryEvent, ItemEnterEvent
 from ulauncher.api.shared.item.ExtensionResultItem import ExtensionResultItem
 from ulauncher.api.shared.action.RenderResultListAction import RenderResultListAction
 from ulauncher.api.shared.action.HideWindowAction import HideWindowAction
+from ulauncher.api.shared.action.DoNothingAction import DoNothingAction
+from subprocess import check_output
+from os import path
+import re
 
 
 class PassExtension(Extension):
-    PASS_PATH = "~/.password-store"
 
     def __init__(self):
         super(PassExtension, self).__init__()
         self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
+
+    def search(self, pattern):
+
+        store_location = self.preferences['store-location']
+
+        if "~" in store_location:
+            store_location = path.expanduser(store_location)
+
+        cmd = ["find",
+               store_location,
+               "-iname",
+               "*%s*.gpg" % pattern]
+        matches = re.findall("%s/*(.+).gpg" % store_location, check_output(cmd))
+
+        return matches
 
 
 class KeywordQueryEventListener(EventListener):
 
     def on_event(self, event, extension):
         items = []
-        for i in range(5):
+
+        query_arg = event.get_argument()
+
+        if not query_arg or len(query_arg) < 3:
+            return RenderResultListAction([ExtensionResultItem(
+                icon='images/icon.png',
+                name='Keep typing...',
+                on_enter=DoNothingAction())])
+
+        for i in extension.search(query_arg):
             items.append(ExtensionResultItem(icon='images/icon.png',
-                                             name='Item %s' % i,
-                                             description='Item description %s' % i,
+                                             name='%s' % i,
+                                             description='description %s' % i,
                                              on_enter=HideWindowAction()))
 
         return RenderResultListAction(items)
+
 
 if __name__ == '__main__':
     PassExtension().run()

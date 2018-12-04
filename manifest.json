@@ -15,6 +15,12 @@
       "name": "pass keyword",
       "description": "Keyword used to launch pass extension",
       "default_value": "pass"
-    }
+    },
+    {
+      "id": "store-location",
+      "type": "input",
+      "name": "password-store location",
+      "default_value": "~/.password-store/"
+}
   ]
 }
