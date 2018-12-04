@@ -1,4 +1,3 @@
-from distutils import dep_util
 from ulauncher.api.client.Extension import Extension
 from ulauncher.api.client.EventListener import EventListener
 from ulauncher.api.shared.event import KeywordQueryEvent
@@ -9,6 +8,11 @@ from ulauncher.api.shared.action.SetUserQueryAction import SetUserQueryAction
 from subprocess import check_output
 from os import path
 import re
+
+PASSWORD_ICON = 'images/icon.png'
+FOLDER_ICON = 'images/folder.png'
+PASSWORD_DESCRIPTION = 'Enter to copy to the clipboard'
+FOLDER_DESCRIPTION = 'Enter to navigate to'
 
 
 class PassExtension(Extension):
@@ -62,23 +66,21 @@ class KeywordQueryEventListener(EventListener):
         for i in result[:6]:
 
             if ".gpg" in i:
-                # is a password
-
-                # remove extension
+                # remove file extension
                 i = i[:-4]
 
-                items.append(ExtensionResultItem(icon='images/icon.png',
-                                                 name="{0}".format(i),
-                                                 description='Enter to copy to the clipboard',
-                                                 on_enter=RunScriptAction(
-                                                     "pass -c {0}/{1}".format(path_ext, i), None)))
+                icon = PASSWORD_ICON
+                description = PASSWORD_DESCRIPTION
+                action = RunScriptAction("pass -c {0}/{1}".format(path_ext, i), None)
             else:
-                # is a directory
-                items.append(ExtensionResultItem(icon='images/folder.png',
-                                                 name="{0}".format(i),
-                                                 description='Enter to navigate',
-                                                 on_enter=SetUserQueryAction(
-                                                     "{0} {1}/{2}/".format(extension.preferences['pass_kw'], path_ext, i))))
+                icon = FOLDER_ICON
+                description = FOLDER_DESCRIPTION
+                action = SetUserQueryAction("{0} {1}/{2}/".format(extension.preferences['pass_kw'], path_ext, i))
+
+            items.append(ExtensionResultItem(icon=icon,
+                                             name="{0}".format(i),
+                                             description=description,
+                                             on_enter=action))
 
         return RenderResultListAction(items)
 
