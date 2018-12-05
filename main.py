@@ -44,10 +44,10 @@ class PassExtension(Extension):
         searching_path = path.join(store_location, path_ext)
 
         for t in ("d", "f"):
-            cmd = 'find {} {}-type {} -not -path *.git -not -name .* -iname *{}*'.format(searching_path,
-                                                                                         max_depth,
-                                                                                         t,
-                                                                                         pattern)
+            cmd = "find {} {}-type {} -not -path *.git* -not -name .* -iname *{}*".format(searching_path,
+                                                                                          max_depth,
+                                                                                          t,
+                                                                                          pattern)
             items = re.findall("{0}/*(.+)".format(searching_path), check_output(cmd.split(" ")))
             items.sort()
             matches = matches + items
