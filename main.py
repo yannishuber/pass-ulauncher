@@ -12,6 +12,8 @@ import re
 
 PASSWORD_ICON = 'images/icon.png'
 FOLDER_ICON = 'images/folder.png'
+MORE_ICON = 'images/more.png'
+WARNING_ICON = 'images/warning.png'
 PASSWORD_DESCRIPTION = 'Enter to copy to the clipboard'
 FOLDER_DESCRIPTION = 'Enter to navigate to'
 
@@ -65,8 +67,8 @@ class KeywordQueryEventListener(EventListener):
                 store_location = path.expanduser(extension.preferences['store-location'])
 
                 if not path.exists(path.join(store_location, path_ext)):
-                    return RenderResultListAction([ExtensionResultItem(icon=PASSWORD_ICON,
-                                                                       name='Invalid path !',
+                    return RenderResultListAction([ExtensionResultItem(icon=WARNING_ICON,
+                                                                       name='Invalid path',
                                                                        description='Please check your arguments.',
                                                                        on_enter=DoNothingAction()
                                                                        )])
@@ -95,7 +97,15 @@ class KeywordQueryEventListener(EventListener):
                                              description=description,
                                              on_enter=action))
 
+        if nb_results < len(result):
+            items.append(ExtensionResultItem(icon=MORE_ICON,
+                                             name='Keep typing...',
+                                             description='More items are available.'
+                                                         + ' Narrow your search by entering a pattern.',
+                                             on_enter=DoNothingAction()))
+
         return RenderResultListAction(items)
+
 
 
 if __name__ == '__main__':

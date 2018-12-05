@@ -12,6 +12,7 @@
  In order to see the new extension you have to restart Ulauncher.
  
 ## TODO
+- [x] Information if not all elements are listed
 - [ ] List directories first
 - [ ] Check user preferences
 - [ ] Possibility to add a new password
