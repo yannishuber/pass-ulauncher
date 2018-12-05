@@ -13,7 +13,7 @@
  
 ## TODO
 - [x] Information if not all elements are listed
-- [ ] List directories first
+- [x] List directories first
 - [ ] Check user preferences
 - [ ] Possibility to add a new password
 - [ ] Git controls (push/pull password-store repo)

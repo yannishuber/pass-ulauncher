@@ -24,22 +24,35 @@ class PassExtension(Extension):
         super(PassExtension, self).__init__()
         self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
 
-    def search(self, path_ext='', pattern='', depth=None):
+    def search(self, path_ext=None, pattern=None, depth=None):
 
         store_location = path.expanduser(self.preferences['store-location'])
 
-        searching_path = path.join(store_location, path_ext)
+        matches = []
 
-        cmd = ['find', searching_path]
+        if not path_ext:
+            path_ext = ''
+
+        if not pattern:
+            pattern = ''
 
         if depth:
-            cmd.extend(['-maxdepth', str(depth)])
+            max_depth = '-maxdepth {} '.format(str(depth))
+        else:
+            max_depth = ''
 
-        cmd.extend(['-not', '-path', '*.git*',
-                    '-not', '-name', '.*',
-                    '-iname', "*{0}*".format(pattern)])
+        searching_path = path.join(store_location, path_ext)
 
-        matches = re.findall("{0}/*(.+)".format(searching_path), check_output(cmd))
+        for t in ("d", "f"):
+            cmd = 'find {} {}-type {} -not -path *.git -not -name .* -iname *{}*'.format(searching_path,
+                                                                                         max_depth,
+                                                                                         t,
+                                                                                         pattern)
+            items = re.findall("{0}/*(.+)".format(searching_path), check_output(cmd.split(" ")))
+            items.sort()
+            matches = matches + items
+
+        print matches
 
         return matches
 
@@ -105,7 +118,6 @@ class KeywordQueryEventListener(EventListener):
                                              on_enter=DoNothingAction()))
 
         return RenderResultListAction(items)
-
 
 
 if __name__ == '__main__':
