@@ -10,16 +10,23 @@
   },
   "preferences": [
     {
-      "id": "pass-keyword",
+      "id": "pass-search",
       "type": "keyword",
-      "name": "Pass",
-      "description": "pass + space + pattern",
-      "default_value": "pass"
+      "name": "Pass search",
+      "description": "Search and copy entries of your password store",
+      "default_value": "ps"
+    },
+    {
+      "id": "pass-generate",
+      "type": "keyword",
+      "name": "Pass generate",
+      "description": "Generate and store new entries in your password store",
+      "default_value": "pg"
     },
     {
       "id": "store-location",
       "type": "input",
-      "name": "Password-store location",
+      "name": "Password store location",
       "default_value": "~/.password-store/"
     },
     {

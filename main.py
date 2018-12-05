@@ -7,7 +7,7 @@ from ulauncher.api.shared.action.RunScriptAction import RunScriptAction
 from ulauncher.api.shared.action.SetUserQueryAction import SetUserQueryAction
 from ulauncher.api.shared.action.DoNothingAction import DoNothingAction
 from subprocess import check_output
-from os import path
+from os import path as os_path
 import re
 
 PASSWORD_ICON = 'images/icon.png'
@@ -17,6 +17,17 @@ WARNING_ICON = 'images/warning.png'
 PASSWORD_DESCRIPTION = 'Enter to copy to the clipboard'
 FOLDER_DESCRIPTION = 'Enter to navigate to'
 
+WRONG_PATH_ITEM = ExtensionResultItem(icon=WARNING_ICON,
+                                      name='Invalid path',
+                                      description='Please check your arguments.',
+                                      on_enter=DoNothingAction()
+                                      )
+MORE_ELEMENTS_ITEM = ExtensionResultItem(icon=MORE_ICON,
+                                         name='Keep typing...',
+                                         description='More items are available.'
+                                                     + ' Narrow your search by entering a pattern.',
+                                         on_enter=DoNothingAction())
+
 
 class PassExtension(Extension):
 
@@ -24,14 +35,12 @@ class PassExtension(Extension):
         super(PassExtension, self).__init__()
         self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
 
-    def search(self, path_ext=None, pattern=None, depth=None):
+    def search(self, path=None, pattern=None, depth=None):
 
-        store_location = path.expanduser(self.preferences['store-location'])
+        store_location = os_path.expanduser(self.preferences['store-location'])
 
-        matches = []
-
-        if not path_ext:
-            path_ext = ''
+        if not path:
+            path = ''
 
         if not pattern:
             pattern = ''
@@ -41,83 +50,113 @@ class PassExtension(Extension):
         else:
             max_depth = ''
 
-        searching_path = path.join(store_location, path_ext)
+        searching_path = os_path.join(store_location, path)
 
-        for t in ("d", "f"):
-            cmd = "find {} {}-type {} -not -path *.git* -not -name .* -iname *{}*".format(searching_path,
+        cmd_files = "find {} {}-type f -not -path *.git* -not -name .* -iname *{}*".format(searching_path,
+                                                                                           max_depth,
+                                                                                           pattern)
+
+        cmd_dirs = "find {} {}-type d -not -path *.git* -not -name .* -iname *{}*".format(searching_path,
                                                                                           max_depth,
-                                                                                          t,
                                                                                           pattern)
-            items = re.findall("{0}/*(.+)".format(searching_path), check_output(cmd.split(" ")))
-            items.sort()
-            matches = matches + items
 
-        print matches
+        files = re.findall("{}/*(.+).gpg".format(searching_path), check_output(cmd_files.split(" ")))
+        dirs = re.findall("{}/*(.+)".format(searching_path), check_output(cmd_dirs.split(" ")))
 
-        return matches
+        files.sort()
+        dirs.sort()
+
+        return files, dirs
 
 
 class KeywordQueryEventListener(EventListener):
 
-    def on_event(self, event, extension):
-        items = []
-        path_ext = ""
+    def __init__(self):
+        self.extension = None
 
-        query_arg = event.get_argument()
+    def search_event(self, arguments):
+        path = ''
+        if not arguments:
 
-        if not query_arg:
-            result = extension.search(depth=1)
+            # No arguments specified, list folders and passwords in the password-store root
+            files, dirs = self.extension.search(depth=1)
         else:
-            path_ext = path.split(query_arg)[0]
-            pattern = path.split(query_arg)[1]
 
-            if path_ext.startswith('/'):
-                path_ext = path_ext[1:]
+            # Splitting arguments into path and pattern
+            path = os_path.split(arguments)[0]
+            pattern = os_path.split(arguments)[1]
 
-            if not query_arg.endswith('/'):
-                result = extension.search(path_ext=path_ext, pattern=pattern)
-            else:
-                store_location = path.expanduser(extension.preferences['store-location'])
+            # If the path begins with a slash we remove it
+            if path.startswith('/'):
+                path = path[1:]
 
-                if not path.exists(path.join(store_location, path_ext)):
-                    return RenderResultListAction([ExtensionResultItem(icon=WARNING_ICON,
-                                                                       name='Invalid path',
-                                                                       description='Please check your arguments.',
-                                                                       on_enter=DoNothingAction()
-                                                                       )])
-                else:
-                    result = extension.search(path_ext=path_ext, pattern=pattern, depth=1)
+            store_location = os_path.expanduser(self.extension.preferences['store-location'])
+            depth = None
 
-        nb_results = int(extension.preferences["max-results"])
+            if not os_path.exists(os_path.join(store_location, path)):
 
-        for i in result[:nb_results]:
+                # If specified folder does not exist show the user an error
+                return RenderResultListAction([WRONG_PATH_ITEM])
+            elif not pattern:
 
-            if ".gpg" in i:
-                # remove file extension
-                i = i[:-4]
+                # If the path exists and there is no pattern, only show files
+                # and dirs in the current location
+                depth = 1
 
-                icon = PASSWORD_ICON
-                description = PASSWORD_DESCRIPTION
-                action = RunScriptAction("pass -c {0}/{1}".format(path_ext, i), None)
-            else:
-                icon = FOLDER_ICON
-                description = FOLDER_DESCRIPTION
-                action = SetUserQueryAction("{0} {1}/".format(extension.preferences['pass-keyword'],
-                                                              path.join(path_ext, i)))
+            files, dirs = self.extension.search(path=path, pattern=pattern, depth=depth)
 
-            items.append(ExtensionResultItem(icon=icon,
-                                             name="{0}".format(i),
-                                             description=description,
+        return RenderResultListAction(self.render_results(path, files, dirs))
+
+    def render_results(self, path, files, dirs):
+        items = []
+        limit = int(self.extension.preferences['max-results'])
+
+        if limit < len(dirs) + len(files):
+            items.append(MORE_ELEMENTS_ITEM)
+
+        for d in dirs:
+            limit -= 1
+            if limit < 0:
+                break
+
+            action = SetUserQueryAction("{0} {1}/".format(self.extension.preferences['pass-search'],
+                                                          os_path.join(path, d)))
+            items.append(ExtensionResultItem(icon=FOLDER_ICON,
+                                             name="{0}".format(d),
+                                             description=FOLDER_DESCRIPTION,
                                              on_enter=action))
 
-        if nb_results < len(result):
-            items.append(ExtensionResultItem(icon=MORE_ICON,
-                                             name='Keep typing...',
-                                             description='More items are available.'
-                                                         + ' Narrow your search by entering a pattern.',
-                                             on_enter=DoNothingAction()))
+        for f in files:
+            limit -= 1
+            if limit < 0:
+                break
 
-        return RenderResultListAction(items)
+            action = RunScriptAction("pass -c {0}/{1}".format(path, f), None)
+            items.append(ExtensionResultItem(icon=PASSWORD_ICON,
+                                             name="{0}".format(f),
+                                             description=PASSWORD_DESCRIPTION,
+                                             on_enter=action))
+
+        return items
+
+    def on_event(self, event, extension):
+        self.extension = extension
+
+        # Get keyword and arguments from event
+        query_keyword = event.get_keyword()
+        query_args = event.get_argument()
+
+        if query_keyword == extension.preferences['pass-generate']:
+            '''
+            Password generation
+            '''
+            # TODO : PASSWORD GENERATION
+            pass
+        elif query_keyword == extension.preferences['pass-search']:
+            '''
+            Password searching
+            '''
+            return self.search_event(query_args)
 
 
 if __name__ == '__main__':
