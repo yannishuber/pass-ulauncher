@@ -20,13 +20,18 @@ FOLDER_DESCRIPTION = 'Enter to navigate to'
 WRONG_PATH_ITEM = ExtensionResultItem(icon=WARNING_ICON,
                                       name='Invalid path',
                                       description='Please check your arguments.',
-                                      on_enter=DoNothingAction()
-                                      )
+                                      on_enter=DoNothingAction())
+
 MORE_ELEMENTS_ITEM = ExtensionResultItem(icon=MORE_ICON,
                                          name='Keep typing...',
                                          description='More items are available.'
                                                      + ' Narrow your search by entering a pattern.',
                                          on_enter=DoNothingAction())
+
+NO_FILENAME_ITEM = ExtensionResultItem(icon=WARNING_ICON,
+                                       name='Please enter a filename',
+                                       description='Please check your arguments.',
+                                       on_enter=DoNothingAction())
 
 
 class PassExtension(Extension):
@@ -74,40 +79,7 @@ class KeywordQueryEventListener(EventListener):
     def __init__(self):
         self.extension = None
 
-    def search_event(self, arguments):
-        path = ''
-        if not arguments:
-
-            # No arguments specified, list folders and passwords in the password-store root
-            files, dirs = self.extension.search(depth=1)
-        else:
-
-            # Splitting arguments into path and pattern
-            path = os_path.split(arguments)[0]
-            pattern = os_path.split(arguments)[1]
-
-            # If the path begins with a slash we remove it
-            if path.startswith('/'):
-                path = path[1:]
-
-            store_location = os_path.expanduser(self.extension.preferences['store-location'])
-            depth = None
-
-            if not os_path.exists(os_path.join(store_location, path)):
-
-                # If specified folder does not exist show the user an error
-                return RenderResultListAction([WRONG_PATH_ITEM])
-            elif not pattern:
-
-                # If the path exists and there is no pattern, only show files
-                # and dirs in the current location
-                depth = 1
-
-            files, dirs = self.extension.search(path=path, pattern=pattern, depth=depth)
-
-        return RenderResultListAction(self.render_results(path, files, dirs))
-
-    def render_results(self, path, files, dirs):
+    def render_results(self, path, files, dirs, keyword):
         items = []
         limit = int(self.extension.preferences['max-results'])
 
@@ -119,7 +91,7 @@ class KeywordQueryEventListener(EventListener):
             if limit < 0:
                 break
 
-            action = SetUserQueryAction("{0} {1}/".format(self.extension.preferences['pass-search'],
+            action = SetUserQueryAction("{0} {1}/".format(keyword,
                                                           os_path.join(path, d)))
             items.append(ExtensionResultItem(icon=FOLDER_ICON,
                                              name="{0}".format(d),
@@ -146,17 +118,73 @@ class KeywordQueryEventListener(EventListener):
         query_keyword = event.get_keyword()
         query_args = event.get_argument()
 
+        # Initialize variables
+        path = ''
+        files = []
+        dirs = []
+        misc = []
+        no_filename = False
+        path_not_exists = False
+
+        if not query_args:
+
+            # No arguments specified, list folders and passwords in the password-store root
+            files, dirs = self.extension.search(depth=1)
+        else:
+
+            # Splitting arguments into path and pattern
+            path = os_path.split(query_args)[0]
+            pattern = os_path.split(query_args)[1]
+
+            # If the path begins with a slash we remove it
+            if path.startswith('/'):
+                path = path[1:]
+
+            store_location = os_path.expanduser(self.extension.preferences['store-location'])
+            depth = None
+
+            if not os_path.exists(os_path.join(store_location, path)):
+
+                path_not_exists = True
+                if query_keyword == extension.preferences['pass-search']:
+
+                    # If specified folder does not exist and we are in searching mode,
+                    # show the user an error
+                    misc.append(WRONG_PATH_ITEM)
+
+            if not pattern:
+
+                # If the path exists and there is no pattern, only show files
+                # and dirs in the current location
+                depth = 1
+
+                if query_keyword == extension.preferences['pass-generate']:
+
+                    # If we are in generation mode and no pattern is given,
+                    # show the user an error
+                    no_filename = True
+                    misc.append(NO_FILENAME_ITEM)
+
+            if not no_filename and query_keyword == extension.preferences['pass-generate']:
+
+                # If the user specified a pattern and we are in generation mode
+                # give him the possibility to generate the password
+                action = RunScriptAction("pass generate -c {}".format(os_path.join(path, pattern)), None)
+                misc.append(ExtensionResultItem(icon=PASSWORD_ICON,
+                                                name='Generate /{}'.format(os_path.join(path, pattern)),
+                                                description='Enter to generate and save password',
+                                                on_enter=action))
+
+            # If the specified path doesn't exist it makes no sense to search for a password
+            if not path_not_exists:
+                files, dirs = self.extension.search(path=path, pattern=pattern, depth=depth)
+
         if query_keyword == extension.preferences['pass-generate']:
-            '''
-            Password generation
-            '''
-            # TODO : PASSWORD GENERATION
-            pass
-        elif query_keyword == extension.preferences['pass-search']:
-            '''
-            Password searching
-            '''
-            return self.search_event(query_args)
+
+            # If we are in generation mode we can remove the files
+            files = []
+
+        return RenderResultListAction(misc + self.render_results(path, files, dirs, query_keyword))
 
 
 if __name__ == '__main__':
