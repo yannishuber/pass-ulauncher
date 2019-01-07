@@ -1,5 +1,7 @@
 # Ulauncher password-store extension
 
+[![Build Status](https://travis-ci.com/yannishuber/pass-ulauncher.svg?branch=master)](https://travis-ci.com/yannishuber/pass-ulauncher)
+
 > A simple [pass](https://www.passwordstore.org/) extension for [Ulauncher](https://ulauncher.io/).
 
 ![Demo](demo.gif)

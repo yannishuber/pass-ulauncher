@@ -122,6 +122,8 @@ class KeywordQueryEventListener(EventListener):
         return items
 
     def on_event(self, event, extension):
+        """ On user input """
+
         self.extension = extension
 
         # Get keyword and arguments from event
