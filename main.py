@@ -61,15 +61,15 @@ class PassExtension(Extension):
 
         searching_path = os_path.join(store_location, path)
 
-        cmd_files = "find {} {}-type f -not \
-                    -path *.git* -not -name .* -iname *{}*".format(searching_path,
-                                                                   max_depth,
-                                                                   pattern)
+        cmd_files = ("find {} {}-type f -not " +
+                     "-path *.git* -not -name .* -iname *{}*").format(searching_path,
+                                                                      max_depth,
+                                                                      pattern)
 
-        cmd_dirs = "find {} {}-type d -not \
-                    -path *.git* -not -name .* -iname *{}*".format(searching_path,
-                                                                   max_depth,
-                                                                   pattern)
+        cmd_dirs = ("find {} {}-type d -not " +
+                    "-path *.git* -not -name .* -iname *{}*").format(searching_path,
+                                                                     max_depth,
+                                                                     pattern)
 
         files = re.findall("{}/*(.+).gpg".format(searching_path),
                            check_output(cmd_files.split(" ")))
