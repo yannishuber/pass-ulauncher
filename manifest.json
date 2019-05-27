@@ -1,39 +1,38 @@
 {
-  "manifest_version": "2",
-  "api_version": "1",
-  "name": "Password store",
-  "description": "Extension for the standard unix password manager",
-  "developer_name": "Yannis Huber",
-  "icon": "images/icon.png",
-  "options": {
-    "query_debounce": 0.1
-  },
-  "preferences": [
-    {
-      "id": "pass-search",
-      "type": "keyword",
-      "name": "Pass search",
-      "description": "Search and copy entries of your password store",
-      "default_value": "ps"
+    "required_api_version": "^2.0.0",
+    "name": "Password store",
+    "description": "Extension for the standard unix password manager",
+    "developer_name": "Yannis Huber",
+    "icon": "images/icon.png",
+    "options": {
+        "query_debounce": 0.1
     },
-    {
-      "id": "pass-generate",
-      "type": "keyword",
-      "name": "Pass generate",
-      "description": "Generate and store new entries in your password store",
-      "default_value": "pg"
-    },
-    {
-      "id": "store-location",
-      "type": "input",
-      "name": "Password store location",
-      "default_value": "~/.password-store/"
-    },
-    {
-      "id": "max-results",
-      "type": "input",
-      "name": "Maximal number of showed results",
-      "default_value": "6"
-    }
-  ]
+    "preferences": [
+        {
+            "id": "pass-search",
+            "type": "keyword",
+            "name": "Pass search",
+            "description": "Search and copy entries of your password store",
+            "default_value": "ps"
+        },
+        {
+            "id": "pass-generate",
+            "type": "keyword",
+            "name": "Pass generate",
+            "description": "Generate and store new entries in your password store",
+            "default_value": "pg"
+        },
+        {
+            "id": "store-location",
+            "type": "input",
+            "name": "Password store location",
+            "default_value": "~/.password-store/"
+        },
+        {
+            "id": "max-results",
+            "type": "input",
+            "name": "Maximal number of showed results",
+            "default_value": "6"
+        }
+    ]
 }
