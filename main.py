@@ -72,9 +72,10 @@ class PassExtension(Extension):
                                                                      pattern)
 
         files = re.findall("{}/*(.+).gpg".format(searching_path),
-                           check_output(cmd_files.split(" ")))
+                           check_output(cmd_files.split(" ")).decode("utf-8"))
+
         dirs = re.findall("{}/*(.+)".format(searching_path),
-                          check_output(cmd_dirs.split(" ")))
+                          check_output(cmd_dirs.split(" ")).decode("utf-8"))
 
         files.sort()
         dirs.sort()
