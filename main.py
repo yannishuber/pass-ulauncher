@@ -114,7 +114,7 @@ class KeywordQueryEventListener(EventListener):
             if limit < 0:
                 break
 
-            action = RunScriptAction("pass -c {0}/{1}".format(path, _file), None)
+            action = RunScriptAction("pass", ["-c", "{0}/{1}".format(path, _file)])
             items.append(ExtensionResultItem(icon=PASSWORD_ICON,
                                              name="{0}".format(_file),
                                              description=PASSWORD_DESCRIPTION,
@@ -183,8 +183,7 @@ class KeywordQueryEventListener(EventListener):
                 # If the user specified a pattern and we are in generation mode
                 # give him the possibility to generate the password
                 action = RunScriptAction(
-                    "pass generate -c {}".format(os_path.join(path, pattern)),
-                    None)
+                    "pass", ["generate", "-c", "{}".format(os_path.join(path, pattern))])
 
                 misc.append(ExtensionResultItem(
                     icon=PASSWORD_ICON,
